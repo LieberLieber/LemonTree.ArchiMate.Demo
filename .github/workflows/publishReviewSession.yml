@@ -132,9 +132,9 @@ jobs:
         id: mergeCheck
         run: |
           Write-Output "****"
-          Write-Output "${{env.LemonTreeAutomationExecutable}}"
+          Write-Output "${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}"
           Write-Output "****"
-          &"${{env.LemonTreeAutomationExecutable}}" merge --base ${{env.ModelName}}_base.${{env.ModelExtension}} --theirs ${{env.ModelName}}.${{env.ModelExtension}} --mine ${{env.ModelName}}_head.${{env.ModelExtension}} --dryrun --sfs ${{ steps.session_file.outputs.result }} --abortOnConflict true
+          &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}" merge --base ${{env.ModelName}}_base.${{env.ModelExtension}} --theirs ${{env.ModelName}}.${{env.ModelExtension}} --mine ${{env.ModelName}}_head.${{env.ModelExtension}} --dryrun --sfs ${{ steps.session_file.outputs.result }} --abortOnConflict true
           Write-Output "result=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
           Write-Output "Return code: $LASTEXITCODE"
           if($LASTEXITCODE -eq 0){
@@ -165,7 +165,7 @@ jobs:
           $mergecheckresult = ${{ steps.mergeCheck.outputs.result}}
           if ($mergecheckresult  -eq 0)
           {
-            $output = &'${{env.LemonTreeAutomationExecutable}}' diff --theirs ${{env.ModelName}}_base.${{env.ModelExtension}} --mine ${{env.ModelName}}_head.${{env.ModelExtension}} --sfs ${{ steps.session_file.outputs.result }} --DiffReportFilename DiffReport.xml --ReportIncludeDiagrams
+            $output = &'${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}' diff --theirs ${{env.ModelName}}_base.${{env.ModelExtension}} --mine ${{env.ModelName}}_head.${{env.ModelExtension}} --sfs ${{ steps.session_file.outputs.result }} --DiffReportFilename DiffReport.xml --ReportIncludeDiagrams
             Write-Output $output
             ForEach ($line in $($output -split "`r`n"))
             {
