@@ -11,6 +11,6 @@ To play with it you should Install: (in this order)
 
 * [Sparx Systems Enterprise Architect 16 or 16.1](https://sparxsystems.com/)
 * [Syntevo SmartGit](https://www.syntevo.com/smartgit/)
-* [LieberLieber LemonTree](https://www.lieberlieber.com/en/lemontree)
+* [LieberLieber LemonTree](https://www.lieberlieber.com/lemontree/en/))
 
 In case you fork it - you will need a License for LieberLieber LemonTree.Automation
