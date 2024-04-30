@@ -1,0 +1,201 @@
+# Copyright (c) Robert Bosch GmbH and LieberLIeber Software GmbH
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+name: LTA update review session to PR's after commit to main
+
+on:
+  push:
+    branches:
+      main
+
+env:
+  ModelName: ArchimateModel
+  ModelExtension: qeax
+  ReviewSessionURL:  https://nexus.lieberlieber.com/repository/lemontree-session
+  LemonTreePipelineToolsRemovePrerenderedDiagramsExecutable: https://nexus.lieberlieber.com/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.RemovePrerenderedDiagrams.exe 
+  
+
+jobs:
+  build:
+    defaults:
+      run:
+        shell: pwsh
+    # The type of runner that the job will run on
+    runs-on: [windows-latest]
+    timeout-minutes: 15
+    steps:
+      - name: Check for related Pull Requests
+        id: linked_prs
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const response = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            console.log("this repo ref:", context.ref)
+            if (response.status != 200) {
+              console.error("ohnoes")
+              process.exit()
+            }
+            const openPR = response.data
+            const affectedPR = openPR.filter(pr => `refs/heads/${pr.base.ref}` == context.ref)
+            console.log(`Found ${affectedPR.length} affected PRs: ${affectedPR.map(pr => pr.number).join(", ")}`)
+            return JSON.stringify(affectedPR, 2)
+            
+      - name: Check number of affected PRs
+        id: checkNumber
+        env:
+          jsVar: ${{steps.linked_prs.outputs.result}}
+        run: |
+          $prList = $env:jsVar | ConvertFrom-Json
+          Write-Output "count=$($prList.length)" >> $env:GITHUB_OUTPUT
+          
+      - uses: actions/checkout@v4
+        if: ${{ steps.checkNumber.outputs.count > 0}}
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      # download Lemontree.Automation on a runner and setup the license
+      - name: GetLTA
+        if: ${{ steps.checkNumber.outputs.count > 0}}
+        uses: LieberLieber/setup-LemonTree.Automation@v5
+        id: GetLTA
+        with:
+          License: ${{secrets.LTALICENSE}} 
+
+      - name: Iterate over Pull Requests
+        if: ${{ steps.checkNumber.outputs.count > 0}}
+        id: WorkOnPr
+        env:
+         jsVar: ${{steps.linked_prs.outputs.result}}
+        run: |
+          #Create review session files for each pull requestReviewers
+          Write-Output "Starting process"
+          function getCommitIds($baseRef, $headRef)
+          {
+            $ret =@{}
+            $ret["baseId"] = git merge-base origin/$baseRef origin/$headRef
+            $ret["sourceId"] = git show-ref --hash origin/$headRef            
+            $ret["targetId"] = git show-ref --hash origin/$baseRef
+            Write-Output "target branch: $baseRef"
+            Write-Output "source branch: $headRef"
+            Write-Output "target commit: $($ret.targetId)"
+            Write-Output "source commit: $($ret.sourceId)"
+            Write-Output "base commit:   $($ret.baseId)"
+            return $ret
+          }
+          
+          function downloadFileVersion($fileName, $commitId)
+          {
+            Write-Output "Filename: $fileName@$commitId"
+            #git fetch origin $commitId
+            $pointer = git cat-file blob $commitId":"$fileName
+            $sha = ($pointer[1] -split(":"))[1]
+            Write-Output "SHA: $sha"
+            $shaPart1 = $sha.Substring(0,2)
+            $shaPart2 = $sha.Substring(2,2)
+            git cat-file --filters $commitId":"$fileName | Out-Null
+            $targetFile = $fileName+"_"+$commitId
+            copy ".git\lfs\objects\$shaPart1\$shaPart2\$sha" $targetFile
+            Write-Output "Version file: $targetFile"
+          }
+          
+          function getSessionFileName($repoName, $prNumber, $sourceCommit, $targetCommit)
+          {
+            $filename = $repoName.Split('/')[1]+"-"+'PR'+"-"+$prNumber+"-"+$sourceCommit+"-"+$targetCommit+'.ltsfs'
+            return $fileName
+          }
+          
+          $prList = $env:jsVar | ConvertFrom-Json
+          $messageList = [System.Collections.ArrayList]::new()
+          $modelFileName = "${{env.ModelName}}.${{env.ModelExtension}}"
+          foreach($pr in $prList)
+          {
+            Write-Output "Processing PR $($pr.number)"
+            $commitIds = getCommitIds $pr.base.ref $pr.head.ref
+            $sessionFileName = getSessionFileName ${{ github.repository }} $pr.number $commitIds.sourceId $commitIds.targetId
+            Write-Output "Session filename: $sessionFileName"
+            
+            Write-Output "Downloading base file"
+            downloadFileVersion $modelFileName $commitIds.baseId
+            Write-Output "Downloading source file"
+            downloadFileVersion $modelFileName $commitIds.sourceId
+            Write-Output "Downloading target file"
+            downloadFileVersion $modelFileName $commitIds.targetId
+            
+            Write-Output "Starting check for merge conflicts"
+            
+            $baseFile = $modelFileName +"_"+$commitIds.baseId
+            $targetFile = $modelFileName +"_"+$commitIds.targetId
+            $sourceFile = $modelFileName +"_"+$commitIds.sourceId
+            $targetUrl = "${{env.ReviewSessionURL}}/$sessionFileName"
+            
+            &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}"`
+              merge `
+              --base $baseFile `
+              --theirs $targetFile `
+              --mine $sourceFile `
+              --dryrun `
+              --sfs $sessionFileName `
+              --abortOnConflict true
+            
+            if($LASTEXITCODE -eq 0)
+            {
+              Write-Output "No merge conflicts, update only on target branch. No new review session file required."
+            }
+            elseif($LASTEXITCODE -eq 2)
+            {
+              Write-Output "Internal Error when diffing. Please report such errors to support@lieberlieber.com"
+            }
+            elseif($LASTEXITCODE -eq 3)
+            {
+              Write-Output "Merge conflicts"
+              Write-Output "Uploading $sessionFileName to Nexus: $targetUrl"
+              while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
+              curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T $sessionFileName $targetUrl
+              $prMessage =@{}
+              $prMessage.number=$pr.number
+              $sfsFileNameLinks =""
+              $sfsFileNameLinks +="New commit on target branch!\n :x: **Please resolve merge conflicts in model first**\n"
+              $sfsFileNameLinks += "\nReview Changes with LemonTree:"
+              $sfsFileNameLinks +="[Desktop]($targetUrl)/"
+              $sfsFileNameLinks +="[Web](https://lemontree2.4biz-94523.k8s.nextlayer.at/web?sessionAutoStart=true&sessionFromUrl=$targetUrl)"
+              $sfsFileNameLinks +="\nInstall [LemonTree 3.3+](https://www.lieberlieber.com/lemontree/en/) to open the Review Session file."
+              $prMessage.message = $sfsFileNameLinks
+              Write-Output "SfsFileNameLinks=$sfsFileNameLinks" >> $env:GITHUB_OUTPUT
+              $messageList.Add($prMessage)
+            }
+            elseif($LASTEXITCODE -eq 6)
+            {
+              Write-Output "Licensing issue of LemonTree.Automation"
+            }
+            else
+            {
+              Write-Output "Unknown error, exit code: $LASTEXITCODE"
+            }
+          }
+          $jsonResult = ConvertTo-Json -InputObject $messageList -Compress
+          Write-Output $jsonResult
+          Write-Output "result=$jsonResult" >> $env:GITHUB_OUTPUT
+          
+      - name: CreateComments
+        if: ${{ steps.checkNumber.outputs.count > 0}}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prList = JSON.parse(`${{steps.WorkOnPr.outputs.result}}`)
+            for (const pr of prList)
+            {
+              console.log(`Updating PR#${pr.number}: ${pr.message}`)
+              await github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: pr.message
+              })        
+            }
