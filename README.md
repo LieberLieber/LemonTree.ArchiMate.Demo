@@ -6,7 +6,7 @@ Sparx Systems Enterprise Architect with ArchiMate, LieberLieber LemonTree and Sy
 GitHub Actions and LieberLieber LemonTree.Automation help to make the changes to the models easy to access via GitHub pull requests.
 
 ## Source 
-This ArchiMate model was prepared by Chris Armstrong at [Armstrong Process Group, Inc.](https://www.aprocessgroup.com) (https://www.aprocessgroup.com)
+This ArchiMate model was prepared by Chris Armstrong at [Armstrong Process Group, Inc.](https://www.aprocessgroup.com) https://www.aprocessgroup.com
 
 ## Preparation
 To play with it you should Install: (in this order)
