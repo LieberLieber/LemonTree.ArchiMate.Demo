@@ -1,0 +1,96 @@
+# Copyright (c) IncQuery Labs cPlc.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+name: Verify IncQuery Validator
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  IncQueryValidatorForEA:
+    defaults:
+      run:
+        shell: pwsh
+    runs-on: [windows-latest]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      
+      - name: Download the relevant profiles for validation
+        shell: pwsh
+        id: mdgtstep
+        run: |
+          New-Item -Path $env:RUNNER_TEMP -Name "mdgt" -ItemType Directory
+          $mdgtdir = Join-Path -Path $env:RUNNER_TEMP -ChildPath "mdgt";
+          Write-Output "mdgtdir=$mdgtdir" >> $env:GITHUB_OUTPUT
+          $user = "${{ secrets.incquery_username }}"
+          $pass= "${{ secrets.incquery_password }}"
+          if ( $user.Length -eq 0 ) { exit 1 }
+          if ( $pass.Length -eq 0 ) { exit 1 }
+          $secpasswd = ConvertTo-SecureString $pass -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential($user, $secpasswd)
+          $xmlpath = Join-Path -Path $mdgtdir -ChildPath "Archimate3.xml";
+          Invoke-WebRequest "https://build.incquerylabs.com/nexus/repository/lieberlieber-collaboration-raw/mdgt/ArchiMate3.xml" -Credential $credential -OutFile $xmlpath
+      
+      - name: Get relevant commit IDs
+        id: CommitIds
+        run: |
+          git fetch
+          $baseId = git merge-base origin/$env:GITHUB_BASE_REF origin/$env:GITHUB_HEAD_REF
+          Write-Output "baseCommitId=$baseId" >> $env:GITHUB_OUTPUT
+          $sourceId = git show-ref --hash origin/$env:GITHUB_HEAD_REF
+          Write-Output "sourceCommitId=$sourceId" >> $env:GITHUB_OUTPUT
+          $targetId = git show-ref --hash origin/$env:GITHUB_BASE_REF
+          Write-Output "targetCommitId=$targetId" >> $env:GITHUB_OUTPUT
+          Write-Output "target branch: $env:GITHUB_BASE_REF"
+          Write-Output "source branch: $env:GITHUB_HEAD_REF"
+          Write-Output "target commit: $targetId"
+          Write-Output "source commit: $sourceId"
+          $gitCommitId = $sourceId
+          Write-Output "CommitID=$gitCommitId" >>$env:GITHUB_OUTPUT
+          Write-Output "base commit: $baseId"
+
+      - name: Run validation
+        uses: IncQueryLabs/incquery-validator-for-ea-action@2024.1.0
+        with:
+          model_file_path: ArchimateModel.qeax
+          analysis_suite: Structural validation
+          incquery_username: "${{ secrets.incquery_username }}"
+          incquery_password: "${{ secrets.incquery_password }}"
+          license: "${{ secrets.incquery_ea_validator_license }}"
+          mdgtPaths: "${{steps.mdgtstep.outputs.mdgtdir}}"
+          comment_on_pr: true
+          fail_on: error
+
+      - name: Publish report to nexus
+        id: publishReport
+        if: always()
+        shell: pwsh
+        run: |
+          while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
+          $filename = "https://nexus.lieberlieber.com/repository/svg/Reports/${{steps.CommitIds.outputs.CommitID}}_report.html"
+          curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T "${{ runner.temp }}\validation_result\report.html" "$filename"
+          $Message = "[Validation Report]($filename)"
+          write-output "$Message"
+          write-output "message=$Message" >> $env:GITHUB_OUTPUT
+          exit 0
+      
+      - name: Create PR comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${{ steps.publishReport.outputs.message }}`
+            })
