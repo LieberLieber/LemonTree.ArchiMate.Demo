@@ -20,7 +20,7 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-component/
+  ReviewSessionURL: https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-component/
 
 jobs:
   LTAPublishComponentsOnRelease:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Extract version from tag
         id: get_version
-        uses: battila7/get-version-action@v2
+        uses: battila7/get-version-action@v2.2.1
                       
       # download Lemontree.Automation on a runner and setup the license
       - name: GetLTA
@@ -51,14 +51,14 @@ jobs:
 
       - name: Publish LemonTree Components
         run: |
-          &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}}" publish --Model ${{env.ModelName}}.${{env.ModelExtension}} --PackageDirectory ".\\" --All
+          &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}" publish --Model ${{env.ModelName}}.${{env.ModelExtension}} --PackageDirectory "." --All
 
-      - name: Archive Session Files
+      - name: Archive Component Files
         uses: actions/upload-artifact@v3
         with:
           name: ArchiMateModelComponents_${{ steps.get_version.outputs.version}}
           path: "*.mpms"
-          retention-days: 5
+          retention-days: 2
 
       - name: Upload LemonTree Components to Nexus
         run: |
@@ -73,10 +73,10 @@ jobs:
             while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
             
             Write-Output "Uploading $sfName to Nexus: $targetUrlLatest"
-            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T ".\$sfName" "$targetUrlLatest"
+            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T "$sfName" "$targetUrlLatest"
             
             Write-Output "Uploading $sfName to Nexus: $targetUrlVersion"
-            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T ".\$sfName" "$targetUrlVersion"
+            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T "$sfName" "$targetUrlVersion"
           }
          
    
