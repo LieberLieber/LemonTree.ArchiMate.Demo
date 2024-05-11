@@ -76,7 +76,7 @@ jobs:
         shell: pwsh
         run: |
           while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
-          $filename = "https://nexus.lieberlieber.com/repository/svg/Reports/${{steps.CommitIds.outputs.CommitID}}_report.html"
+          $filename = "http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/IncQueryValidatorReports/${{steps.CommitIds.outputs.CommitID}}_report.html"
           curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T "${{ runner.temp }}\validation_result\report.html" "$filename"
           $Message = "[Validation Report]($filename)"
           write-output "$Message"

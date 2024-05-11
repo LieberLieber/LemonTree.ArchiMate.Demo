@@ -17,8 +17,8 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: https://nexus.lieberlieber.com/repository/lemontree-session
-  SVGURL: https://nexus.lieberlieber.com/repository/svg/Diff/
+  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
+  SVGURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/svg/Diff/
 
 jobs:
   PublishReviewSession:
@@ -27,6 +27,7 @@ jobs:
         shell: pwsh
     runs-on: [windows-latest]
     timeout-minutes: 15
+    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -115,17 +116,6 @@ jobs:
         with:
           License: ${{secrets.LTALICENSE}} 
         #ExeLocation &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}"
-      
-      - name: PrepareLTALicense #on the private runner LemonTree Automation is preinstalled. we just get the license
-        run: |
-          '${{secrets.LTALICENSE}}' | Out-File -FilePath lta.lic
-
-      - name: Publish Model Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ModelFiles
-          path: .\*.qeax
-          retention-days: 5
 
       - name: Check for merge conflicts
         if: steps.baseDownload.outputs.result == 'downloaded'
@@ -270,20 +260,12 @@ jobs:
           
           Write-Output "SfsFileNameLinks=$sfsFileNameLinks" >> $env:GITHUB_OUTPUT
 
-      - name: Archive Session Files
-        if: steps.baseDownload.outputs.result == 'downloaded'
-        uses: actions/upload-artifact@v3
-        with:
-          name: Review Session File
-          path: ${{ steps.session_file.outputs.result }}
-          retention-days: 5
-
       - name: Archive DiffReport.xml
         uses: actions/upload-artifact@v3
         with:
                 name: DiffReport
                 path: .\*.xml
-                retention-days: 5
+                retention-days: 2
 
       - name: Create PR comment
         if: steps.baseDownload.outputs.result == 'downloaded'
