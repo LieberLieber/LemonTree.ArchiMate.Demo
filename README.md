@@ -17,4 +17,7 @@ To play with it you should Install: (in this order)
 
 In case you fork it - you will need a License for LieberLieber LemonTree.Automation
 
+## Nexus Artifact Storage
+The files created by LemonTree.Automation are hosted on http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/
+
 

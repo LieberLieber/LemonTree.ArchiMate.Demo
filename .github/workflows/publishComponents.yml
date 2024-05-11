@@ -20,10 +20,10 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: https://nexus.lieberlieber.com/repository/lemontree-component/
+  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-component/
 
 jobs:
-  PublishComponents:
+  LTAPublishComponentsOnRelease:
     defaults:
       run:
         shell: pwsh
@@ -31,7 +31,8 @@ jobs:
     timeout-minutes: 15
     
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout from GitHub
+        uses: actions/checkout@v4
         with:
           lfs: true
           fetch-depth: 0

@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-name: Verify Modelcheck
+name: Run Modelcheck
 
 on:
  push:
@@ -12,15 +12,17 @@ env:
   ModelName: ArchimateModel.qeax
 
 jobs:
-  ModelReadinessCheck:
+  RunModelcheck:
     defaults:
       run:
         shell: pwsh
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout from GitHub
+        uses: actions/checkout@v4
         with:
           lfs: true
           fetch-depth: 0
@@ -72,7 +74,7 @@ jobs:
           #for now never stop 
           exit 0
 
-      - name: evaulate Exit Code
+      - name: Evaluate Exit Code
         run: |
           Write-Output "set job failed on ..."
           Write-Output "Current Exit Code ${{ steps.modelcheck.outputs.modelcheckExitCode }}"
