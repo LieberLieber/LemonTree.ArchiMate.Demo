@@ -17,8 +17,8 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/
-  SVGURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/svg/Diff/
+  ReviewSessionURL: https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
+  SVGURL: https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/svg/Diff/
 
 jobs:
   PublishReviewSession:
@@ -221,10 +221,10 @@ jobs:
                           write-output "$qualifiedName ==> $filename"
                           $cdata_b | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}|Set-Content -Encoding UTF8 -Path $filename
 
-                          $Message = $Message +"\n\n$qualifiedName\n\n [![SVG](https://nexus.lieberlieber.com/repository/svg/Diff/${{steps.CommitIds.outputs.CommitID}}$filename)](https://github.com/LieberLieber/LemonTree.PCS.Demo/actions/workflows/publishReviewSession.yml)"
+                          $Message = $Message +"\n\n$qualifiedName\n\n [![SVG](${{env.SVGURL}}/${{steps.CommitIds.outputs.CommitID}}$filename)](https://github.com/LieberLieber/LemonTree.PCS.Demo/actions/workflows/publishReviewSession.yml)"
                           Write-Output "$uploadFile"
                           while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
-                            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T ".\$filename" "https://nexus.lieberlieber.com/repository/svg/Diff/${{steps.CommitIds.outputs.CommitID}}$filename"
+                            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T ".\$filename" "${{env.SVGURL}}/${{steps.CommitIds.outputs.CommitID}}$filename"
                       }
                   }
               }

@@ -20,7 +20,7 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-component/
+  ReviewSessionURL: https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-component/
 
 jobs:
   LTAPublishComponentsOnRelease:
