@@ -13,7 +13,7 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL:  http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
+  ReviewSessionURL:  https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
   
 jobs:
   UpdateReviewSessionFilesInPR:
