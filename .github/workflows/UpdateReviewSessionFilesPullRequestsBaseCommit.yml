@@ -13,18 +13,16 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL:  https://nexus.lieberlieber.com/repository/lemontree-session
-  LemonTreePipelineToolsRemovePrerenderedDiagramsExecutable: https://nexus.lieberlieber.com/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.RemovePrerenderedDiagrams.exe 
+  ReviewSessionURL:  http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
   
-
 jobs:
-  build:
+  UpdateReviewSessionFilesInPR:
     defaults:
       run:
         shell: pwsh
-    # The type of runner that the job will run on
     runs-on: [windows-latest]
     timeout-minutes: 15
+
     steps:
       - name: Check for related Pull Requests
         id: linked_prs
@@ -54,7 +52,8 @@ jobs:
           $prList = $env:jsVar | ConvertFrom-Json
           Write-Output "count=$($prList.length)" >> $env:GITHUB_OUTPUT
           
-      - uses: actions/checkout@v4
+      - name: checkout from GitHub
+        uses: actions/checkout@v4
         if: ${{ steps.checkNumber.outputs.count > 0}}
         with:
           lfs: true
@@ -67,6 +66,7 @@ jobs:
         id: GetLTA
         with:
           License: ${{secrets.LTALICENSE}} 
+        #ExeLocation &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}"
 
       - name: Iterate over Pull Requests
         if: ${{ steps.checkNumber.outputs.count > 0}}

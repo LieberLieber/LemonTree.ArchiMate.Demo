@@ -59,7 +59,8 @@ jobs:
             core.setOutput('head', triggeredPR.head.ref)
             core.setOutput('base', triggeredPR.base.ref)
             
-      - uses: actions/checkout@v4
+      - name: checkout from GitHub
+        uses: actions/checkout@v4
         with:
           lfs: true
           fetch-depth: 0
