@@ -17,7 +17,7 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
+  ReviewSessionURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/
   SVGURL: http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/svg/Diff/
 
 jobs:
