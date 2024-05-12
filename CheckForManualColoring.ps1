@@ -19,7 +19,7 @@
 # and t_object.StyleEx like "%LegendOpts=57;%" 
 
 Install-Module -Name PSSQLite
-$db = "ArchiMateModel.qeax"
+$db = ".\ArchimateModel.qeax"
 $sql =""
 $sql +="select t_diagram.Name as DiagramName, 'DiagramObject Color' as ColorType, Count(*) as NumberViolation"
 $sql +=" from (t_diagramobjects"
