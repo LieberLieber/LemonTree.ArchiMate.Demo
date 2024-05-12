@@ -21,6 +21,7 @@ In case you fork it - you will need a License for LieberLieber LemonTree.Automat
 The files created by LemonTree.Automation are hosted on [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://nexus.lieberlieber.com/#browse/browse:LemonTree.ArchiMate.Demo)
 
 ## LemonTree Components are stored on Nexus
-
+When a release is created in GitHub an Action autmatically publishes LemonTree Components to: 
 [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://nexus.lieberlieber.com/#browse/browse:LemonTree.ArchiMate.Demo:lemontree-component)
-To download use DownloadComponents.ps1 
+
+To download use [DownloadComponents.ps1](https://github.com/LieberLieber/LemonTree.ArchiMate.Demo/blob/main/DownloadComponents.ps1)
