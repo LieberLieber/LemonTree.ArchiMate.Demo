@@ -25,4 +25,4 @@ When a release is created in GitHub an Action autmatically publishes LemonTree C
 [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://nexus.lieberlieber.com/#browse/browse:LemonTree.ArchiMate.Demo:lemontree-component)
 
 To download use [DownloadComponents.ps1](https://github.com/LieberLieber/LemonTree.ArchiMate.Demo/blob/main/DownloadComponents.ps1)
-    
+      
