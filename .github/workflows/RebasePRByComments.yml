@@ -86,7 +86,7 @@ jobs:
         run: |
           $env:GIT_EDITOR = "true"
           
-       
+         dir .\LTA\*.*
           
           $gitcmd = 'C:\Program Files\Git\git-cmd.exe'
           
