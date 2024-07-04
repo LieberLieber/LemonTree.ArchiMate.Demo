@@ -86,10 +86,7 @@ jobs:
         run: |
           $env:GIT_EDITOR = "true"
           
-          $lta = '${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}'
-          Write-Output "*****"
-          Write-Output '${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}'
-          Write-Output "*****"
+       
           
           $gitcmd = 'C:\Program Files\Git\git-cmd.exe'
           
@@ -111,7 +108,7 @@ jobs:
               &$gitcmd "git cat-file blob HEAD:${{env.ModelName}}.${{env.ModelExtension}} | git lfs smudge > ${{env.ModelName}}_mine.${{env.ModelExtension}} & exit"
               &$gitcmd "git cat-file blob REBASE_HEAD:${{env.ModelName}}.${{env.ModelExtension}} | git lfs smudge > ${{env.ModelName}}_theirs.${{env.ModelExtension}} & exit"
             
-              &$lta merge --Base ${{env.ModelName}}_base.${{env.ModelExtension}} --Theirs ${{env.ModelName}}_theirs.${{env.ModelExtension}} --Mine ${{env.ModelName}}_mine.${{env.ModelExtension}} --out ${{env.ModelName}}.${{env.ModelExtension}}
+              &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}" merge --Base ${{env.ModelName}}_base.${{env.ModelExtension}} --Theirs ${{env.ModelName}}_theirs.${{env.ModelExtension}} --Mine ${{env.ModelName}}_mine.${{env.ModelExtension}} --out ${{env.ModelName}}.${{env.ModelExtension}}
           
               if($LASTEXITCODE -eq 0){
                 Write-Output "No merge conflicts, setting message"
