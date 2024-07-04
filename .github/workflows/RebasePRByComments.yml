@@ -87,6 +87,10 @@ jobs:
           $env:GIT_EDITOR = "true"
           
           $lta = '${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}'
+          Write-Output "*****"
+          Write-Output '${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}'
+          Write-Output "*****"
+          
           $gitcmd = 'C:\Program Files\Git\git-cmd.exe'
           
           Write-Output "set user config"
