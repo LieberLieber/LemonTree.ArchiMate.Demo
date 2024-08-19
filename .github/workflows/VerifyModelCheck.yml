@@ -21,6 +21,14 @@ jobs:
     timeout-minutes: 15
 
     steps:
+     
+      - id: get_version
+        uses: dhkatz/get-version-action@v3
+
+      - run: echo ${{ steps.get_version.outputs.version }}
+
+      - run: echo ${{ steps.get_version.outputs.version-without-v }}
+      
       - name: checkout from GitHub
         uses: actions/checkout@v4
         with:
