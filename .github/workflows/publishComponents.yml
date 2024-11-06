@@ -54,7 +54,7 @@ jobs:
           &"${{steps.GetLTA.outputs.LemonTreeAutomationExecutable}}" publish --Model ${{env.ModelName}}.${{env.ModelExtension}} --PackageDirectory "." --All
 
       - name: Archive Component Files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ArchiMateModelComponents_${{ steps.get_version.outputs.version}}
           path: "*.mpms"
