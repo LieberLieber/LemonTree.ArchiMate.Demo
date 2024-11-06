@@ -59,7 +59,7 @@ jobs:
           Write-Output "base commit: $baseId"
 
       - name: Run validation
-        uses: IncQueryLabs/incquery-validator-for-ea-action@2024.1.0
+        uses: IncQueryLabs/incquery-validator-for-ea-action@2024.2.0
         with:
           model_file_path: ArchimateModel.qeax
           analysis_suite: Structural validation
