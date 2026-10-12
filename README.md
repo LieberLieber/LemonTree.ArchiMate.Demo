@@ -20,6 +20,8 @@ In case you fork it - you will need a License for LieberLieber LemonTree.Automat
 ## Nexus Artifact Storage
 The files created by LemonTree.Automation are hosted on [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://lieberlieber.nexus/#browse/browse:LemonTree.ArchiMate.Demo)
 
+Diagram SVGs shown in pull request comments are not stored on Nexus (GitHub does not render external SVGs). They are committed to the orphan `svg` branch of this repository by [ProcessSvgDiagrams.ps1](scripts/ProcessSvgDiagrams.ps1).
+
 ## LemonTree Components are stored on Nexus
 When a release is created in GitHub an Action autmatically publishes LemonTree Components to: 
 [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://lieberlieber.nexus/#browse/browse:LemonTree.ArchiMate.Demo:lemontree-component)

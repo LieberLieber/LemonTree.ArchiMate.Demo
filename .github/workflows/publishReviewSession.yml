@@ -14,11 +14,18 @@ on:
       - synchronize
       - review_requested
 
+permissions:
+  contents: write        # Required to push SVGs to the svg branch
+  pull-requests: write
+  issues: write
+
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
   ReviewSessionURL: https://lieberlieber.nexus/repository/LemonTree.ArchiMate.Demo/lemontree-session
-  SVGURL: https://lieberlieber.nexus/repository/LemonTree.ArchiMate.Demo/svg/Diff/
+  DiffReportFilename: DiffReport.xml
+  GitUserName: 'LemonTree.Automation'
+  GitUserEmail: 'support@lieberlieber.com'
 
 jobs:
   PublishReviewSession:
@@ -200,40 +207,21 @@ jobs:
           
           $Message = $Message +"\n\n Modified Elements in SystemArchitecture:\n\n$modifiedElementOutput"
 
-          
-          # Select all diagramPicture elements using the defined namespace
+
           $diagramPictures = $xmlContent.SelectNodes('//ns:diagramPictures/ns:diagramPicture', $ns)
-          
-          # Output the count of found elements
           Write-Host "Found $($diagramPictures.Count) Diagrams."
           $Message = $Message +"\n\nFound $($diagramPictures.Count) Diagrams."
-          foreach ($diagramPicture in $diagramPictures) {
-              $diagramGuid = $diagramPicture.guid
-              if($diagramGuid){
-                  $cdata_b = $diagramPicture.diagramPictureB.InnerText
-          
-              # Check if the CDATA section is empty
-              if (![string]::IsNullOrEmpty($cdata_b)) {
-                          $qualifiedName = $diagramPicture.diagramPictureB.qualifiedName
-                          write-host $qualifiedName
-                          $fileGuid = $diagramGuid.Replace('{','').Replace('}','')
-                          $filename = "$fileGuid.svg"
-                          write-output "$qualifiedName ==> $filename"
-                          $cdata_b | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}|Set-Content -Encoding UTF8 -Path $filename
 
-                          $Message = $Message +"\n\n$qualifiedName\n\n [![SVG](${{env.SVGURL}}/${{steps.CommitIds.outputs.CommitID}}$filename)](https://github.com/LieberLieber/LemonTree.PCS.Demo/actions/workflows/publishReviewSession.yml)"
-                          Write-Output "$uploadFile"
-                          while (Test-Path Alias:curl) {Remove-Item Alias:curl} #remove the alias binding from curl to Invoke-WebRequest
-                            curl "-u${{secrets.NEXUSAUTHENTICATION}}" -T ".\$filename" "${{env.SVGURL}}/${{steps.CommitIds.outputs.CommitID}}$filename"
-                      }
-                  }
-              }
-
-          
           Write-Output "$Message"
           Write-Output "SfsFileName=$sfsfilename" >> $env:GITHUB_OUTPUT
           Write-Output "message=$Message" >> $env:GITHUB_OUTPUT
           exit 0
+
+      - name: Process SVG diagrams
+        if: steps.baseDownload.outputs.result == 'downloaded' && steps.mergeCheck.outputs.result == 0 && hashFiles(env.DiffReportFilename) != ''
+        id: processSvgs
+        run: |
+          & .\scripts\ProcessSvgDiagrams.ps1 -DiffReportFilename "${{env.DiffReportFilename}}" -GitUserName "${{env.GitUserName}}" -GitUserEmail "${{env.GitUserEmail}}" -PullRequestNumber "${{github.event.pull_request.number}}" -RepositoryName "${{github.repository}}"
 
       - name: Upload Session
         id: uploadSession
@@ -276,5 +264,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${{ steps.checkSession.outputs.message }}${{ steps.uploadSession.outputs.SfsFileNameLinks }}`
+              body: `${{ steps.checkSession.outputs.message }}${{ steps.uploadSession.outputs.SfsFileNameLinks }}${{ steps.processSvgs.outputs.svgLinksMarkdown }}`
             })
