@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: checkout from GitHub
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           lfs: true
           fetch-depth: 0
@@ -32,11 +32,11 @@ jobs:
           if ('${{runner.os}}' -eq 'Linux') 
           {
             #workaround because github artifacts logic doesn't maintain properties
-            Invoke-WebRequest -URI "https://nexus.lieberlieber.com/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.ModelCheck" -OutFile ./LemonTree.Pipeline.Tools.ModelCheck 
+            Invoke-WebRequest -URI "https://lieberlieber.nexus/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.ModelCheck" -OutFile ./LemonTree.Pipeline.Tools.ModelCheck 
             chmod +x ./LemonTree.Pipeline.Tools.ModelCheck
           }
           elseif ('${{runner.os}}' -eq 'Windows') {
-            Invoke-WebRequest -URI "https://nexus.lieberlieber.com/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.ModelCheck.exe" -OutFile ./LemonTree.Pipeline.Tools.ModelCheck.exe
+            Invoke-WebRequest -URI "https://lieberlieber.nexus/repository/lemontree-pipeline-tools/LemonTree.Pipeline.Tools.ModelCheck.exe" -OutFile ./LemonTree.Pipeline.Tools.ModelCheck.exe
           }
           else {
               Write-Output "${{runner.os}} is not supported"

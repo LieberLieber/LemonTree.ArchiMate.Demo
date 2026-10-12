@@ -13,7 +13,7 @@ on:
 env:
   ModelName: ArchimateModel
   ModelExtension: qeax
-  ReviewSessionURL:  https://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/lemontree-session
+  ReviewSessionURL:  https://lieberlieber.nexus/repository/LemonTree.ArchiMate.Demo/lemontree-session
   
 jobs:
   UpdateReviewSessionFilesInPR:
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Check for related Pull Requests
         id: linked_prs
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           result-encoding: string
           script: |
@@ -53,7 +53,7 @@ jobs:
           Write-Output "count=$($prList.length)" >> $env:GITHUB_OUTPUT
           
       - name: checkout from GitHub
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         if: ${{ steps.checkNumber.outputs.count > 0}}
         with:
           lfs: true
@@ -62,7 +62,7 @@ jobs:
       # download Lemontree.Automation on a runner and setup the license
       - name: GetLTA
         if: ${{ steps.checkNumber.outputs.count > 0}}
-        uses: LieberLieber/setup-LemonTree.Automation@v5
+        uses: LieberLieber/setup-LemonTree.Automation@v7
         id: GetLTA
         with:
           License: ${{secrets.LTALICENSE}} 
@@ -185,7 +185,7 @@ jobs:
           
       - name: CreateComments
         if: ${{ steps.checkNumber.outputs.count > 0}}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const prList = JSON.parse(`${{steps.WorkOnPr.outputs.result}}`)
