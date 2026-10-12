@@ -18,11 +18,11 @@ To play with it you should Install: (in this order)
 In case you fork it - you will need a License for LieberLieber LemonTree.Automation
 
 ## Nexus Artifact Storage
-The files created by LemonTree.Automation are hosted on [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://nexus.lieberlieber.com/#browse/browse:LemonTree.ArchiMate.Demo)
+The files created by LemonTree.Automation are hosted on [http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://lieberlieber.nexus/#browse/browse:LemonTree.ArchiMate.Demo)
 
 ## LemonTree Components are stored on Nexus
 When a release is created in GitHub an Action autmatically publishes LemonTree Components to: 
-[http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://nexus.lieberlieber.com/#browse/browse:LemonTree.ArchiMate.Demo:lemontree-component)
+[http://nexus.lieberlieber.com/repository/LemonTree.ArchiMate.Demo/](https://lieberlieber.nexus/#browse/browse:LemonTree.ArchiMate.Demo:lemontree-component)
 
 To download use [DownloadComponents.ps1](https://github.com/LieberLieber/LemonTree.ArchiMate.Demo/blob/main/DownloadComponents.ps1)
  
